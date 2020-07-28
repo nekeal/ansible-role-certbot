@@ -1,0 +1,29 @@
+---
+- name: Check if certificate already exists.
+  stat:
+    path: /etc/letsencrypt/live/{{ cert_item.domains | first | replace('*.', '') }}/fullchain.pem
+  register: letsencrypt_cert
+
+- name: Get information about certificate
+  openssl_certificate_info:
+    path: /etc/letsencrypt/live/{{ cert_item.domains | first | replace('*.', '') }}/fullchain.pem
+  register: letsencrypt_cert_data
+  when: letsencrypt_cert.stat.exists
+
+- name: Set letsencrypt_cert_is_fake var
+  set_fact:
+    letsencrypt_cert_is_fake: "{{ 'yes' if letsencrypt_cert_data.issuer.commonName == 'Fake LE Intermediate X1' else 'no' }}"
+  when:
+    - letsencrypt_cert.stat.exists
+
+- name: Delete existing certificates if needed
+  file:
+    path: /etc/letsencrypt/{{ item }}
+    state: absent
+  loop:
+    - "live/{{ cert_item.domains | first | replace('*.', '') }}"
+    - "archive/{{ cert_item.domains | first | replace('*.', '') }}"
+    - "renewal/{{ cert_item.domains | first | replace('*.', '') }}.conf"
+  when:
+    - letsencrypt_cert.stat.exists
+    - letsencrypt_cert_is_fake | default(false) and not certbot_staging_mode

@@ -8,6 +8,7 @@ certbot_auto_renew_options: "--quiet --no-self-upgrade"
 
 # Parameters used when creating new Certbot certs.
 certbot_create_if_missing: false
+certbot_staging_mode: false
 certbot_create_method: standalone
 certbot_admin_email: email@example.com
 certbot_certs: []
@@ -19,6 +20,7 @@ certbot_certs: []
 #     - example3.com
 certbot_create_command: >-
   {{ certbot_script }} certonly --standalone --noninteractive --agree-tos
+   {% if certbot_staging_mode %} --staging {% endif %}
   --email {{ cert_item.email | default(certbot_admin_email) }}
   -d {{ cert_item.domains | join(',') }}
 

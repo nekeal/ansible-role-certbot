@@ -10,6 +10,7 @@ certbot_auto_renew_options: "--quiet --no-self-upgrade"
 certbot_create_if_missing: false
 certbot_staging_mode: false
 certbot_create_method: standalone
+certbot_webroot_path: /var/www/html
 certbot_admin_email: email@example.com
 certbot_certs: []
 # - email: janedoe@example.com
@@ -19,8 +20,9 @@ certbot_certs: []
 # - domains:
 #     - example3.com
 certbot_create_command: >-
-  {{ certbot_script }} certonly --standalone --noninteractive --agree-tos
-   {% if certbot_staging_mode %} --staging {% endif %}
+  {{ certbot_script }} certonly --{{ certbot_create_method }} --noninteractive --agree-tos
+  {% if certbot_staging_mode %} --staging {% endif %}
+  {% if certbot_create_method == 'webroot' %} {{ certbot_webroot_path }} {% endif %}
   --email {{ cert_item.email | default(certbot_admin_email) }}
   -d {{ cert_item.domains | join(',') }}
 

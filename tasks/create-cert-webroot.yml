@@ -1,0 +1,18 @@
+---
+- name: Check if certificate already exists.
+  stat:
+    path: /etc/letsencrypt/live/{{ cert_item.domains | first | replace('*.', '') }}/fullchain.pem
+  register: letsencrypt_cert
+
+- name: Ensure that webroot for certbot exists
+  file:
+    path: "{{ certbot_webroot_path }}"
+    recurse: yes
+    state: directory
+
+- name: Generate new certificate if one doesn't exist.
+  command:
+    cmd: "{{ certbot_command_result }}"
+  register: certbot_command_result
+  changed_when: not 'no action taken' in certbot_command_result.stdout
+  when: not letsencrypt_cert.stat.exists

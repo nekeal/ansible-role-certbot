@@ -12,7 +12,7 @@
 
 - name: Set letsencrypt_cert_is_fake var
   set_fact:
-    letsencrypt_cert_is_fake: "{{ 'yes' if letsencrypt_cert_data.issuer.commonName == 'Fake LE Intermediate X1' else 'no' }}"
+    letsencrypt_cert_is_fake: "{{ 'yes' if letsencrypt_cert_data.issuer.commonName in ['Fake LE Intermediate X1', 'selfsigned'] else 'no' }}"
   when:
     - letsencrypt_cert.stat.exists
 

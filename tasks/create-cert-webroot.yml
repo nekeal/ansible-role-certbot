@@ -12,7 +12,8 @@
 
 - name: Generate new certificate if one doesn't exist.
   command:
-    cmd: "{{ certbot_command_result }}"
+    cmd: "{{ certbot_create_command }}"
   register: certbot_command_result
   changed_when: not 'no action taken' in certbot_command_result.stdout
   when: not letsencrypt_cert.stat.exists
+  notify: "Reload web server"

@@ -24,14 +24,21 @@ By default, this role configures a cron job to run under the provided user accou
 
 ### Automatic Certificate Generation
 
-Currently there is one built-in method for generating new certificates using this role: `standalone`. Other methods (e.g. using nginx or apache and a webroot) may be added in the future.
+Currently there are two built-in methods for generating new certificates using this role: `standalone` and `webroot`. Other methods (e.g. using nginx or apache) may be added in the future.
 
 **For a complete example**: see the fully functional test playbook in [molecule/default/playbook-standalone-nginx-aws.yml](molecule/default/playbook-standalone-nginx-aws.yml).
 
     certbot_create_if_missing: false
     certbot_create_method: standalone
 
-Set `certbot_create_if_missing` to `yes` or `True` to let this role generate certs. Set the method used for generating certs with the `certbot_create_method` variable—current allowed values include: `standalone`.
+Set `certbot_create_if_missing` to `yes` or `True` to let this role generate certs. Set the method used for generating certs with the `certbot_create_method` variable—current allowed values include: `standalone`, `webroot`.
+
+    certbot_create_method: webroot
+    certbot_webroot_path: /var/www/html
+    certbot_reload_web_service_name: nginx
+
+For webroot method you need to specify `certbot_webroot_path` where challege's files will be stored and need to be served by your web server.
+You will also want to provide name of web service so it could be reloaded after issuing certificates.
 
     certbot_admin_email: email@example.com
 
@@ -83,19 +90,19 @@ Michael Porter also has a walkthrough of [Creating A Let’s Encrypt Wildcard Ce
 
 ## Dependencies
 
-None.
+For webroot method you need to configure your web server to serve static files at `<your_domain>/.well-known/acme-challenge` from `{{ certbot_webroot_path }}/.well-known/acme-challenge`.
 
 ## Example Playbook
 
     - hosts: servers
-    
+
       vars:
         certbot_auto_renew_user: your_username_here
         certbot_auto_renew_minute: "20"
         certbot_auto_renew_hour: "5"
-    
+
       roles:
-        - geerlingguy.certbot
+        - nekeal.certbot
 
 See other examples in the `tests/` directory.
 
@@ -138,3 +145,5 @@ MIT / BSD
 ## Author Information
 
 This role was created in 2016 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+
+Updated by nekeal in 2020.

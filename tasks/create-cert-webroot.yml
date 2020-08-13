@@ -3,12 +3,18 @@
   stat:
     path: /etc/letsencrypt/live/{{ cert_item.domains | first | replace('*.', '') }}/fullchain.pem
   register: letsencrypt_cert
+  tags:
+    - certbot
+    - certbot_create_certs
 
 - name: Ensure that webroot for certbot exists
   file:
     path: "{{ certbot_webroot_path }}"
     recurse: yes
     state: directory
+  tags:
+    - certbot
+    - certbot_create_certs
 
 - name: Generate new certificate if one doesn't exist.
   command:
@@ -17,3 +23,6 @@
   changed_when: not 'no action taken' in certbot_command_result.stdout
   when: not letsencrypt_cert.stat.exists
   notify: "Reload web server"
+  tags:
+    - certbot
+    - certbot_create_certs
